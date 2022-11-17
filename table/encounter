@@ -1,0 +1,92 @@
+--INPATIENT
+select
+    PAT_ENC_HSP.PAT_ENC_CSN_ID,
+        PAT_ENC_HSP.PAT_ID,
+        'INPATIENT' ENCOUNTER_TYPE,
+        PAT_ENC_HSP.HOSP_ADMSN_TIME START_DATE,
+        PAT_ENC_HSP.HOSP_DISCH_TIME END_DATE,
+        CLARITY_LOC.LOC_NAME LOC_NAME,
+        --CLARITY_POS.CITY LOC_CITY,
+        --CLARITY_DEP.DEPARTMENT_NAME,
+        ZC_PAT_STATUS.NAME ENCOUNTER_STATUS,
+        ZC_ACCT_CLASS_HA.NAME PATIENT_CLASS,
+        ZC_PAT_SERVICE.NAME ADT_SERVICE,
+        PAT_ENC_HSP.EMER_ADM_DATE,
+        PAT_ENC_HSP.INP_ADM_DATE,
+        ZC_DISCH_DISP.NAME DISCH_DISP --,
+        --CLARITY_EPM.PAYOR_NAME,
+        --CLARITY_EPP.BENEFIT_PLAN_NAME,
+        --ZC_PROD_TYPE.NAME PROD_TYPE
+from
+        clr_encounters.PAT_ENC_HSP
+        inner join DATABASE.PATIENT on PATIENT.PAT_ID = PAT_ENC_HSP.PAT_ID
+        left join clr_encounters.PAT_ENC on PAT_ENC.PAT_ENC_CSN_ID = PAT_ENC_HSP.PAT_ENC_CSN_ID
+        left join clr_clarity_reference.ZC_DISCH_DISP on PAT_ENC_HSP.DISCH_DISP_C = ZC_DISCH_DISP.DISCH_DISP_C
+        left join clr_clarity_reference.ZC_PAT_SERVICE on PAT_ENC_HSP.HOSP_SERV_C = ZC_PAT_SERVICE.HOSP_SERV_C
+        left join clr_clarity_reference.ZC_ACCT_CLASS_HA on PAT_ENC_HSP.ADT_PAT_CLASS_C= ZC_ACCT_CLASS_HA.ACCT_CLASS_HA_C
+        left join clr_clarity_reference.ZC_PAT_STATUS on PAT_ENC_HSP.ADT_PATIENT_STAT_C= ZC_PAT_STATUS.ADT_PATIENT_STAT_C
+
+        left join clr_providers.CLARITY_DEP on PAT_ENC_HSP.DEPARTMENT_ID = CLARITY_DEP.DEPARTMENT_ID
+        left join clr_providers.CLARITY_LOC on CLARITY_DEP.REV_LOC_ID = CLARITY_LOC.LOC_ID
+        left join clr_providers.CLARITY_POS on CLARITY_LOC.LOC_ID = CLARITY_POS.POS_ID
+
+        --left join COVERAGE on PAT_ENC.COVERAGE_ID = COVERAGE.COVERAGE_ID
+        --left join CLARITY_EPM on COVERAGE.PAYOR_ID= CLARITY_EPM.PAYOR_ID
+        --left join CLARITY_EPP on COVERAGE.PLAN_ID = CLARITY_EPP.BENEFIT_PLAN_ID
+        --left join CLARITY_EPP_2 on COVERAGE.PLAN_ID = CLARITY_EPP_2.BENEFIT_PLAN_ID
+        --left join clr_clarity_reference.ZC_PROD_TYPE on CLARITY_EPP_2.PROD_TYPE_C = ZC_PROD_TYPE.PROD_TYPE_C
+where
+  PAT_ENC_HSP.ADT_PAT_CLASS_C = '101'
+  and PAT_ENC_HSP.ADT_PATIENT_STAT_C in ( 2, 3 ) -- ADMITTED or DISCHARGED, no preadmission, no HOD visit, no leave of absence
+
+union all
+
+  --ambulatory, telemedicine
+  select
+    PAT_ENC.PAT_ENC_CSN_ID,
+        PAT_ENC.PAT_ID,
+        CASE
+          when PAT_ENC.ENC_TYPE_C in ( '101', '2527', '1200', '1201', '1214', '2531', '2502' ) then 'AMBULATORY'
+          when PAT_ENC.ENC_TYPE_C in ( '1202', '1203', '210130', '21031', '76'  ) then 'TELEMEDICINE'
+        END ENCOUNTER_TYPE,
+        PAT_ENC.EFFECTIVE_DATE_DTTM START_DATE,
+        PAT_ENC.EFFECTIVE_DATE_DTTM END_DATE,
+        CLARITY_LOC.LOC_NAME LOC_NAME,
+        --CLARITY_POS.CITY LOC_CITY,
+        --CLARITY_DEP.DEPARTMENT_NAME,
+        '' ENCOUNTER_STATUS,
+        '' PATIENT_CLASS,
+        '' ADT_SERVICE,
+        '' EMER_ADM_DATE,
+        '' INP_ADM_DATE,
+        '' DISCH_DISP --,
+        --CLARITY_EPM.PAYOR_NAME,
+        --CLARITY_EPP.BENEFIT_PLAN_NAME,
+        --ZC_PROD_TYPE.NAME PROD_TYPE
+from
+        clr_encounters.PAT_ENC
+        inner join DATABASE.PATIENT on PATIENT.PAT_ID = PAT_ENC.PAT_ID
+        left join clr_providers.CLARITY_DEP on PAT_ENC.DEPARTMENT_ID = CLARITY_DEP.DEPARTMENT_ID
+        left join clr_providers.CLARITY_LOC on CLARITY_DEP.REV_LOC_ID = CLARITY_LOC.LOC_ID
+        --left join CLARITY_POS on CLARITY_LOC.LOC_ID = CLARITY_POS.POS_ID
+        --left join COVERAGE on PAT_ENC.COVERAGE_ID = COVERAGE.COVERAGE_ID
+        --left join CLARITY_EPM on COVERAGE.PAYOR_ID= CLARITY_EPM.PAYOR_ID
+        --left join CLARITY_EPP on COVERAGE.PLAN_ID = CLARITY_EPP.BENEFIT_PLAN_ID
+        --left join CLARITY_EPP_2 on COVERAGE.PLAN_ID = CLARITY_EPP_2.BENEFIT_PLAN_ID
+        --left join ZC_PROD_TYPE on CLARITY_EPP_2.PROD_TYPE_C = ZC_PROD_TYPE.PROD_TYPE_C
+where
+        PAT_ENC.ENC_TYPE_C in (
+          '101', '2527', '1200', '1201', '1214', '2531', '2502', -- ambulatory
+          '1202', '1203', '210130', '21031', '76' -- telemedicine
+        )
+        and PAT_ENC.APPT_STATUS_C = 2   -- Completed
+        and PAT_ENC.SERV_AREA_ID = 10 -- excludes voluntaries
+        and PAT_ENC.DEPARTMENT_ID not in ( --excludes OHS departments
+          --covid vaccine sites
+          10676017, 10653020, 102605605, 10755010, 10043033, 10721039, 10166005,
+          100024006, 10669022, 10760026, 10155029, 11811002, 10635030, 10194054,
+          10764038, 10002111, 10638004, 10001217, 11817012, 10656006, 10800112,
+          10803045, 10803046, 1084001119, 1084001124, 10530198, 10500194,
+          --ohs clinics
+          1084001063, 1084001064, 10800087, 10800089, 10500121, 10500181, 10500186, 108400116
+        )

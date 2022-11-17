@@ -1,0 +1,37 @@
+-- EDIT THIS QUERY TO IDENTIFY THE COHORT
+  
+select
+  PATIENT.PAT_ID,
+  PATIENT.PAT_MRN_ID MRN,
+  PATIENT.BIRTH_DATE,
+  ZC_SEX.NAME SEX,
+  ETHNICITY.ETHNICITY ETHNICITY,
+  RACE.RACE,
+  ZC_PAT_LIVING_STAT.NAME LIVING_STATUS,
+  PATIENT.DEATH_DATE
+from
+  clr_patients.PATIENT
+  left join clr_patients.PATIENT_4 on PATIENT_4.PAT_ID = PATIENT.PAT_ID
+  left join clr_clarity_reference.ZC_PAT_LIVING_STAT on PATIENT_4.PAT_LIVING_STAT_C = ZC_PAT_LIVING_STAT.PAT_LIVING_STAT_C
+  left join clr_clarity_reference.ZC_SEX on ZC_SEX.RCPT_MEM_SEX_C = PATIENT.SEX_C
+  left join clr_clarity_reference.ZC_ETHNIC_GROUP on ZC_ETHNIC_GROUP.ETHNIC_GROUP_C = PATIENT.ETHNIC_GROUP_C
+  left join (
+    select
+      PATIENT_RACE.PAT_ID,
+      group_concat(ZC_PATIENT_RACE.NAME, ', ') as RACE
+    from
+      clr_patients.PATIENT_RACE
+      left join clr_clarity_reference.ZC_PATIENT_RACE on PATIENT_RACE.PATIENT_RACE_C = ZC_PATIENT_RACE.PATIENT_RACE_C
+    group by
+      PATIENT_RACE.PAT_ID
+  ) RACE on PATIENT.PAT_ID = RACE.PAT_ID
+  left join (
+    select
+      ETHNIC_BACKGROUND.PAT_ID,
+      group_concat(ZC_ETHNIC_BKGRND.NAME, ', ' ) as ETHNICITY
+    from
+      clr_patients.ETHNIC_BACKGROUND
+      left join clr_clarity_reference.ZC_ETHNIC_BKGRND  ON ETHNIC_BACKGROUND.ETHNIC_BKGRND_C= ZC_ETHNIC_BKGRND.ETHNIC_BKGRND_C
+    group by
+      ETHNIC_BACKGROUND.PAT_ID
+  ) ETHNICITY on PATIENT.PAT_ID = ETHNICITY.PAT_ID

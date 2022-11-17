@@ -1,0 +1,79 @@
+--PROBLEM_LIST
+select
+        PROBLEM_LIST.PAT_ID,
+        PROBLEM_LIST_HX.HX_PROBLEM_EPT_CSN PAT_ENC_CSN_ID,
+        'Problem List' DX_TYPE,
+        PROBLEM_LIST.DX_ID,
+        CLARITY_EDG.DX_NAME,
+        EDG_CURRENT_ICD10.CODE ICD10,
+        PROBLEM_LIST.DATE_OF_ENTRY ENTRY_DATE,
+        PROBLEM_LIST.RESOLVED_DATE RESOLVED_DATE,
+        ZC_PROBLEM_STATUS.NAME STATUS_COMMENT
+from
+        clr_diagnoses.PROBLEM_LIST
+        inner join DATABASE.patient on patient.PAT_ID = PROBLEM_LIST.PAT_ID
+        left join clr_diagnoses.PROBLEM_LIST_HX on PROBLEM_LIST.PROBLEM_LIST_ID = PROBLEM_LIST_HX.PROBLEM_LIST_ID
+          and PROBLEM_LIST_HX.LINE = 1
+        left join clr_diagnoses.CLARITY_EDG on CLARITY_EDG.DX_ID = PROBLEM_LIST.DX_ID
+        left join clr_diagnoses.EDG_CURRENT_ICD10 on CLARITY_EDG.DX_ID = EDG_CURRENT_ICD10.DX_ID
+        left join clr_clarity_reference.ZC_PROBLEM_STATUS on ZC_PROBLEM_STATUS.PROBLEM_STATUS_C = PROBLEM_LIST.PROBLEM_STATUS_C
+
+
+ union all
+
+ --PAT_ENC_DX
+ select
+        PAT_ENC_DX.PAT_ID,
+        PAT_ENC_DX.PAT_ENC_CSN_ID,
+        'Encounter Diagnosis' DX_TYPE,
+        PAT_ENC_DX.DX_ID,
+        CLARITY_EDG.DX_NAME,
+        EDG_CURRENT_ICD10.CODE ICD10,
+        PAT_ENC_DX.CONTACT_DATE ENTRY_DATE,
+        '' RESOLVED_DATE,
+        CASE when PRIMARY_DX_YN = 'Y' then 'Primary' else '' END STATUS_COMMENT
+from
+    clr_diagnoses.PAT_ENC_DX
+                inner join DATABASE.patient on patient.PAT_ID = PAT_ENC_DX.PAT_ID
+    left join clr_diagnoses.CLARITY_EDG on CLARITY_EDG.DX_ID = PAT_ENC_DX.DX_ID
+                left join clr_diagnoses.EDG_CURRENT_ICD10 on CLARITY_EDG.DX_ID = EDG_CURRENT_ICD10.DX_ID
+
+
+union all
+
+--HSP_ACCT_DX_LIST
+select
+        PAT_ENC_HSP.PAT_ID,
+        PAT_ENC_HSP.PAT_ENC_CSN_ID,
+        'Hospital Account Diagnosis' DX_TYPE,
+        HSP_ACCT_DX_LIST.DX_ID,
+        CLARITY_EDG.DX_NAME,
+        EDG_CURRENT_ICD10.CODE ICD10,
+        PAT_ENC_HSP.CONTACT_DATE ENTRY_DATE,
+        '' RESOLVED_DATE,
+        CASE when DX_HAC_YN = 'Y' then 'Hospital Acquired Condition' else '' END STATUS_COMMENT
+from
+                clr_diagnoses.HSP_ACCT_DX_LIST
+    left join clr_encounters.PAT_ENC_HSP on PAT_ENC_HSP.HSP_ACCOUNT_ID = HSP_ACCT_DX_LIST.HSP_ACCOUNT_ID
+                inner join DATABASE.patient on patient.PAT_ID = PAT_ENC_HSP.PAT_ID
+    left join clr_diagnoses.CLARITY_EDG on CLARITY_EDG.DX_ID = HSP_ACCT_DX_LIST.DX_ID
+                left join clr_diagnoses.EDG_CURRENT_ICD10 on CLARITY_EDG.DX_ID = EDG_CURRENT_ICD10.DX_ID
+
+union all
+
+--MEDICAL_HX
+select
+        MEDICAL_HX.PAT_ID,
+        MEDICAL_HX.HX_LNK_ENC_CSN PAT_ENC_CSN_ID,
+        'Medical History' DX_TYPE,
+        MEDICAL_HX.DX_ID,
+        CLARITY_EDG.DX_NAME,
+        EDG_CURRENT_ICD10.CODE ICD10,
+        MEDICAL_HX.MED_HX_START_DT ENTRY_DATE,
+        MEDICAL_HX.MED_HX_END_DT RESOLVED_DATE,
+        concat_ws('', 'Started on: ', MEDICAL_HX.MEDICAL_HX_DATE) as STATUS_COMMENT
+from
+    clr_patient_history.MEDICAL_HX
+                inner join DATABASE.patient on patient.PAT_ID = MEDICAL_HX.PAT_ID
+    left join clr_diagnoses.CLARITY_EDG on CLARITY_EDG.DX_ID = MEDICAL_HX.DX_ID
+                left join clr_diagnoses.EDG_CURRENT_ICD10 on CLARITY_EDG.DX_ID = EDG_CURRENT_ICD10.DX_ID
