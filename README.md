@@ -4,10 +4,10 @@ Aasma Shaukat, Jennifer Stromberg
 We are looking for endoscopy and corresponding pathology data for all colonoscopies performed at any NYU Langone Health location between 2010 - present. 
 
 **Requested Data Elements:**
-*Patient ID (from both endo & path reports)
-*Provider ID (from both endo & path reports)
-*Encounter ID (from both endo & path reports)
-*Encounter Date (from both endo & path reports)
+* Patient ID (from both endo & path reports)
+* Provider ID (from both endo & path reports)
+* Encounter ID (from both endo & path reports)
+* Encounter Date (from both endo & path reports)
 *Encounter Location
 *Patient Sex
 *Patient Age
