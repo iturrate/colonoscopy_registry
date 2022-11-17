@@ -1,23 +1,45 @@
-# RegistryDB
-Create and refresh a standard base registry for a custom cohort of patients.
+# Colonscopy Regsitry
+Aasma Shaukat
+Jennifer Stromberg
 
-**Registry creation steps:**
+We are looking for endoscopy and corresponding pathology data for all colonoscopies performed at any NYU Langone Health location between 2010 - present. 
+
+*Requested Data Elements:
+Patient ID (from both endo & path reports)
+Provider ID (from both endo & path reports)
+Encounter ID (from both endo & path reports)
+Encounter Date (from both endo & path reports)
+Encounter Location
+Patient Sex
+Patient Age
+Procedure Type (to confirm it was a colonoscopy)
+Prep Quality
+Indication (may be multiple fields)
+Advanced to Cecum and or/Distance Reached
+Procedure Difficulty
+Complete Colonoscopy
+Incomplete Colonoscopy
+Number of Polyps
+-location of each polyp (from both endo & path reports)
+-size of each polyp (from both endo & path reports)
+-morphology of each polyp (endo report)
+-histology of each polyp (path report)
+Procedure Start Time
+Cecum Reached Time
+Procedure End Time
+Total Procedure Time
+Withdrawal Time
+Jar/Specimen Information (per specimen, may be multiple fields)
+Grossing Information per specimen, may be multiple fields)
+Diagnosis (per specimen, may be multiple fields)
+Comments
+
+
+**ToDo:**
 
 1. request creation of a new database and of a database_wksp database in the datalake 
     * https://collibraprod.nyumc.org/dashboard
-2. define the list of users who need access to read/write and users who need read-only for both and request:
-    * https://nyu-amc.ivanticloud.com/Modules/SelfService/#serviceCatalog/request/039CCFC23D484150B69DEF76F48EF0D5
-3. clone this repo, modify refesh_db.py:
-    * edit 'db_name' to be the name of the new database
-    * identify any temp_tables and the base_tables in the table directory
-    * modify the sql in the table files in the table directory
-7. run refresh.py
-8. review the table called refresh_log in the database for timestamps of events
-9. if the registry needs regular updating, set up a cron job to run refresh.py
 
-**Registry Customization:**
-1. customize existing tables by editing files in the 'table' directory
-2. add new tables to the registry by creating new files in the table directory 
-    * name the file the name of the new table
-    * the new file contains sql that defines the new table
-    * refer to this registry's database name as DATABASE in the sql files 
+
+**Done:**
+
