@@ -6,7 +6,7 @@ import config
 #############################################################################################
 
 # ENTER NAME OF DATALAKE DATABASE
-config.db_name = 'precision_medicine_registry' 
+config.db_name = 'colonoscopy_registry' 
 
 # Files in the '/table' firectory contain sql that are used to create tables in the database.
 # Table names in the database are the file names.
