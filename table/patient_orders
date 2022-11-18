@@ -1,5 +1,5 @@
 select
-  *
+  patient_orders.*
 from
   provation_md.patient_orders
-  left join DATABASE.exam on exam.order_id = patient_orders.id
+  inner join DATABASE.exam on exam.order_id = patient_orders.id
