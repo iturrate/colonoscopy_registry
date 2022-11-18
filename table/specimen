@@ -1,0 +1,5 @@
+select
+  specimen.*
+from
+  provation_md.specimen
+  inner join DATABASE exam on exam.examid = specimen.examid
