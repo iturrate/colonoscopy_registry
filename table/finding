@@ -1,0 +1,5 @@
+select
+  finding.*
+from
+  provation_md.finding
+  inner join DATABASE.exam on exam.examid = finding.examid
