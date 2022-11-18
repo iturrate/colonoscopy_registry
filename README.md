@@ -1,4 +1,4 @@
-# Colonscopy Regsitry
+# Colonoscopy Regsitry
 Aasma Shaukat, Jennifer Stromberg
 
 We are looking for endoscopy and corresponding pathology data for all colonoscopies performed at any NYU Langone Health location between 2010 - present. 
