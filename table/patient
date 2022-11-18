@@ -1,0 +1,5 @@
+select
+  *
+from
+  patient
+  inner join DATABASE.exam on exam.patientid = patient.patientid
