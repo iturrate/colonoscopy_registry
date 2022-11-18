@@ -1,5 +1,5 @@
 select 
-  *
+  examcodes.*
 from
   examcodes 
   inner join DATABASE.exam on exam.examid = exam_codes.examid
