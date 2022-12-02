@@ -1,5 +1,275 @@
-select
-  patient.*
-from
-  patient
-  inner join DATABASE.exam on exam.patientid = patient.patientid
+ select distinct
+    PATIENT.PAT_ID,
+    PATIENT.PAT_MRN_ID MRN,
+    PATIENT.BIRTH_DATE,
+    ZC_SEX.NAME SEX,
+    ETHNICITY.ETHNICITY ETHNICITY,
+    RACE.RACE,
+    ZC_PAT_LIVING_STAT.NAME LIVING_STATUS,
+    PATIENT.DEATH_DATE,
+    case when HIV.count_of_dx > 0 then 1 else 0 end HIV,
+    case when CANCER.count_of_dx > 0 then 1 else 0 end CANCER, 
+    case when PULM.count_of_dx > 0 then 1 else 0 end PULM,
+    case when CHF.count_of_dx > 0 then 1 else 0 end CHF,
+    case when DEMENTIA.count_of_dx > 0 then 1 else 0 end DEMENTIA,
+    case when DMWOCOMPLICATION.count_of_dx > 0 then 1 else 0 end DMWOCOMPLICATION,
+    case when METASTATIC.count_of_dx > 0 then 1 else 0 end METASTATIC,
+    case when MILDLIVER.count_of_dx > 0 then 1 else 0 end MILDLIVER,
+    case when MODSEVERELIVER.count_of_dx > 0 then 1 else 0 end MODSEVERELIVER,
+    case when MODSEVERELIVER.count_of_dx > 0 then 1 else 0 end MI,
+    case when PVD.count_of_dx > 0 then 1 else 0 end PVD,
+    case when RHEUM.count_of_dx > 0 then 1 else 0 end RHEUM,  
+    case when DMWCOMPLICATION.count_of_dx > 0 then 1 else 0 end DMWCOMPLICATION, 
+    case when PLEGIA.count_of_dx > 0 then 1 else 0 end  PLEGIA, 
+    case when PUD.count_of_dx > 0 then 1 else 0 end PUD,  
+    case when RENAL.count_of_dx > 0 then 1 else 0 end RENAL
+  from
+    DATABASE.exam
+    left join clr_encounters.pat_enc on pat_enc.pat_enc_csn_id = exam.accountnumber
+    left join clr_patients.patient on patient.pat_id = pat_enc.pat_id
+    
+    left join clr_patients.PATIENT_4 on PATIENT_4.PAT_ID = PATIENT.PAT_ID
+    left join clr_clarity_reference.ZC_PAT_LIVING_STAT on PATIENT_4.PAT_LIVING_STAT_C = ZC_PAT_LIVING_STAT.PAT_LIVING_STAT_C
+    left join clr_clarity_reference.ZC_SEX on ZC_SEX.RCPT_MEM_SEX_C = PATIENT.SEX_C
+    left join clr_clarity_reference.ZC_ETHNIC_GROUP on ZC_ETHNIC_GROUP.ETHNIC_GROUP_C = PATIENT.ETHNIC_GROUP_C
+    left join (
+      select
+        PATIENT_RACE.PAT_ID,
+        group_concat(ZC_PATIENT_RACE.NAME, ', ') as RACE
+      from
+        clr_patients.PATIENT_RACE
+        left join clr_clarity_reference.ZC_PATIENT_RACE on PATIENT_RACE.PATIENT_RACE_C = ZC_PATIENT_RACE.PATIENT_RACE_C
+      group by
+        PATIENT_RACE.PAT_ID
+    ) RACE on PATIENT.PAT_ID = RACE.PAT_ID
+    left join (
+      select
+        ETHNIC_BACKGROUND.PAT_ID,
+        group_concat(ZC_ETHNIC_BKGRND.NAME, ', ' ) as ETHNICITY
+      from
+        clr_patients.ETHNIC_BACKGROUND
+        left join clr_clarity_reference.ZC_ETHNIC_BKGRND  ON ETHNIC_BACKGROUND.ETHNIC_BKGRND_C= ZC_ETHNIC_BKGRND.ETHNIC_BKGRND_C
+      group by
+        ETHNIC_BACKGROUND.PAT_ID
+    ) ETHNICITY on PATIENT.PAT_ID = ETHNICITY.PAT_ID
+
+--	1779016 : "AIDS/HIV",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779016'
+     group by PAT_ID
+) HIV on HIV.PAT_ID = PATIENT.PAT_ID
+
+--	1779013 : "ANY MALIGNANCY,INCLUDING LYMPHOMA AND LEUKEMIA,EXCEPT MALIGNANT NEOPLASM OF SKIN",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779013'
+     group by PAT_ID
+) CANCER on CANCER.PAT_ID = PATIENT.PAT_ID
+
+--	1779003 : "CEREBROVASCULAR DISEASE",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779003'
+     group by PAT_ID
+) CVD on CVD.PAT_ID = PATIENT.PAT_ID
+
+--	1779005 : "CHRONIC PULMONARY DISEASE",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779005'
+     group by PAT_ID
+) PULM on PULM.PAT_ID = PATIENT.PAT_ID
+
+--	1779001 : "CONGESTIVE HEART FAILURE",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779001'
+     group by PAT_ID
+) CHF on CHF.PAT_ID = PATIENT.PAT_ID
+
+-- 	1779004 : "DEMENTIA",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779001'
+     group by PAT_ID
+) DEMENTIA on DEMENTIA.PAT_ID = PATIENT.PAT_ID
+
+--	1779009 : "DIABETES WITHOUT CHRONIC COMPLICATION",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779009'
+     group by PAT_ID
+) DMWOCOMPLICATION on DMWOCOMPLICATION.PAT_ID = PATIENT.PAT_ID
+
+--	1779015 : "METASTATIC SOLID TUMOR",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779015'
+     group by PAT_ID
+) METASTATIC on METASTATIC.PAT_ID = PATIENT.PAT_ID
+
+--	1779008 : "MILD LIVER DISEASE",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779008'
+     group by PAT_ID
+) MILDLIVER on MILDLIVER.PAT_ID = PATIENT.PAT_ID
+
+-- 	1779014 : "MODERATE OR SEVERE LIVER DISEASE",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779014'
+     group by PAT_ID
+) MODSEVERELIVER on MODSEVERELIVER.PAT_ID = PATIENT.PAT_ID
+
+----	1779000 : "MYOCARDIAL INFARCTION",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779000'
+     group by PAT_ID
+) MI on MI.PAT_ID = PATIENT.PAT_ID
+
+-- --	1779002 : "PERIPHERAL VASCULAR DISEASE",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779002'
+     group by PAT_ID
+) PVD on PVD.PAT_ID = PATIENT.PAT_ID
+
+----	1779006 : "RHEUMATIC DISEASE",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779006'
+     group by PAT_ID
+) RHEUM on RHEUM.PAT_ID = PATIENT.PAT_ID
+
+----	1779010 : "DIABETES WITH CHRONIC COMPLICATION",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779010'
+     group by PAT_ID
+) DMWCOMPLICATION on DMWCOMPLICATION.PAT_ID = PATIENT.PAT_ID
+
+--	1779011 : "HEMIPLEGIA OR PARAPLEGIA",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779011'
+     group by PAT_ID
+) PLEGIA on PLEGIA.PAT_ID = PATIENT.PAT_ID
+
+--	1779007 : "PEPTIC ULCER DISEASE",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779007'
+     group by PAT_ID
+) PUD on PUD.PAT_ID = PATIENT.PAT_ID
+
+----	1779012 : "RENAL DISEASE",
+left join (
+    select
+      PAT_ID, 
+      count(DX_ID) COUNT_OF_DX
+    from
+      clr_diagnoses.PAT_ENC_DX
+      left join clr_diagnoses.GROUPER_DX_RECORDS on PAT_ENC_DX.DX_ID = GROUPER_DX_RECORDS.CMPL_DX_RECS_ID
+     where
+       GROUPER_DX_RECORDS.GROUPER_ID = '1779012'
+     group by PAT_ID
+) RENAL on RENAL.PAT_ID = PATIENT.PAT_ID
