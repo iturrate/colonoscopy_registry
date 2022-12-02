@@ -17,7 +17,7 @@ temp_tables = [ ]
 # ENTER NAMES OF TABLES IN ORDER THAT WILL BE DONE FIRST
 # ANY TABLES NOT LISTED HERE WILL BE REFRESHED IN RANDOM ORDER
 base_tables = [ 
-  'patient', 'non_inpatient_f2f_encounter', 'inpatient_encounter'
+  'exam', 'patient'
 ]
 
 #############################################################################################
