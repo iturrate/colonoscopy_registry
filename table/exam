@@ -2,5 +2,6 @@ select
  *
 from
   provation_md.exam
+  left join clr_encounters.pat_enc on cast(pat_enc.pat_enc_csn_id as string) = exam.accountnumber
 where 
   examtype = 'Colonoscopy'
