@@ -25,7 +25,7 @@
     case when RENAL.count_of_dx > 0 then 1 else 0 end RENAL
   from
     DATABASE.exam
-    left join clr_encounters.pat_enc on pat_enc.pat_enc_csn_id = exam.accountnumber
+    left join clr_encounters.pat_enc on cast(pat_enc.pat_enc_csn_id as string) = exam.accountnumber
     left join clr_patients.patient on patient.pat_id = pat_enc.pat_id
     
     left join clr_patients.PATIENT_4 on PATIENT_4.PAT_ID = PATIENT.PAT_ID
