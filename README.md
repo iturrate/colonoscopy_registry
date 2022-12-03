@@ -41,4 +41,7 @@ We are looking for endoscopy and corresponding pathology data for all colonoscop
 
 
 **Done:**
+12/2:
+* added connection between accountnumber and pat_enc_csn_id
+* pulling patient info from epic 
 
