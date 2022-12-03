@@ -4,4 +4,4 @@ select
   pat_enc.contact_date
 from
   clr_encounters.pat_enc
-  inner join DATABASE.exam on exam.accountnumber = pat_enc.pat_enc_csn_id
+  inner join DATABASE.exam on exam.accountnumber = cast(pat_enc.pat_enc_csn_id as string) 
