@@ -41,6 +41,9 @@ We are looking for endoscopy and corresponding pathology data for all colonoscop
 
 
 **Done:**
+12/3:
+* added encounter
+
 12/2:
 * added connection between accountnumber and pat_enc_csn_id
 * only pulling exams with a pat_enc_csn_id that matched in Epic now
